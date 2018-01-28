@@ -11,7 +11,7 @@ SRC =				$(addprefix $(SRC_DIR), $(SRC_FILES))
 OBJ =				$(addprefix $(OBJ_DIR), $(OBJ_FILES))
 
 CC =				gcc
-C_FLAGS =			-Wall -Wextra -Werror
+C_FLAGS =			-Wall -Wextra -Werror -g
 INCLUDE_FLAGS =		$(addprefix -I , $(INCLUDE_DIRS))
 
 RED =				\033[31m
@@ -48,7 +48,7 @@ clean:
 
 fclean: clean
 	@echo "$(YELLOW_LIGHT)$(NAME): $(YELLOW)Cleaning executable...$(END_COLOUR)"
-	@/bin/rm -f $(NAME)
+	@/bin/rm -f $(NAME) debug
 	@echo "$(YELLOW_LIGHT)$(NAME): $(GREEN)Successfully cleaned everything!$(END_COLOUR)"
 
 re: fclean all
