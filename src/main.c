@@ -98,11 +98,13 @@ int	check_magic(t_tar *t)
 {
 	if (strncmp(t->ustar, (const char *)TMAGIC, TMAGLEN) != 0)
 	{
+		printf("%s: ", t->file_name);
 		printf("error: bad tar file? ustar magic is incorrect\n");
 		return (0);
 	}
 	if (strncmp(t->ustar_ver, TVERSION, TVERSLEN) != 0)
 	{
+		printf("%s: ", t->file_name);
 		printf("error: bad tar file? ustar version does not match\n");
 		return (0);
 	}
@@ -127,6 +129,7 @@ int	is_valid_header(t_tar *t)
 	}
 	if (checksum != strtol(t->checksum, NULL, 8))
 	{
+		printf("%s: ", t->file_name);
 		printf("error: bad tar file? checksum does not match\n");
 		return(0);
 	}
@@ -145,33 +148,25 @@ char	*make_file_name(t_tar *t)
 	return (data);
 }
 
-void	recreate_modtime(char *filename, t_tar *t)
+
+void	print_filename(char *filename, int verbose)
 {
-	struct timeval *times[2];
-
-	times = ft_memalloc(sizeof(struct timeval) * 2);
-
-	times[0].tv_sec = strtol(t->last_mod, NULL, 8);
-	times[0].tv_usec = 0;
-	times[1].tv_sec = strtol(t->last_mod, NULL, 8);
-	times[1].tv_usec = 0;
-
-	printf("         filetime: %lu\n", strtol(t->last_mod, NULL, 8));
-	printf("setting file time: %d\n", utimes(filename, times));
-	return ;
+	if ((errno != 0) && (errno != EEXIST))
+		printf("x %s: %s\n", filename, strerror(errno));
+	if (verbose == 1)
+		printf("x %s\n", filename);
+	return;
 }
 
-void	recreate_directory(t_tar *t, size_t *i, int option)
+void	recreate_directory(t_tar *t, size_t *i, int verbose)
 {
 	char	*filename;
 
 	filename = make_file_name(t);
-	if (mkdir(filename, strtol(t->file_mode, NULL, 8)) == -1)
-		perror(strerror(errno));
-	else
-		chmod(filename, strtol(t->file_mode, NULL, 8));
-	if (option == 1) //restore original modification time
-		recreate_modtime(filename, t);
+	errno = 0;
+	mkdir(filename, strtol(t->file_mode, NULL, 8));
+	print_filename(filename, verbose);
+	chmod(filename, strtol(t->file_mode, NULL, 8));
 	free(filename);
 	*i += 512;
 	return ;
@@ -194,32 +189,35 @@ int	put_file_contents(char *filename, unsigned char *data, size_t size)
 }
 
 
-void	recreate_file(t_tar *t, size_t *i, int option)
+void	recreate_file(t_tar *t, size_t *i, int verbose)
 {
 	char	*fn;
 	size_t	fs;
+	size_t	pad;
 
 	fn = make_file_name(t);
 	fs = strtol(t->file_size, NULL, 8);
-	if (put_file_contents(fn, &((unsigned char *)t)[512], fs) == 0)
-		perror(strerror(errno));
-	else
-		chmod(fn, strtol(t->file_mode, NULL, 8));
-	if (option == 1)
-		recreate_modtime(fn, t);
+	errno = 0;
+	put_file_contents(fn, &((unsigned char *)t)[512], fs);
+	print_filename(fn, verbose);
+	chmod(fn, strtol(t->file_mode, NULL, 8));
 	free(fn);
 	*i += 512;
-	*i += fs + ((((fs / 512) + 1 ) * 512) - fs);
+	pad = ((((fs / 512) + 1 ) * 512) - fs);
+	*i += fs;
+	if (pad != 512)
+		i += pad;
+
 	return ;
 }
 
 
-void	extract_file(t_tar *t, size_t *i, int option)
+void	extract_file(t_tar *t, size_t *i, int verbose)
 {
 	if (t->file_type[0] == DIRTYPE)
-		recreate_directory(t, i, option);
+		recreate_directory(t, i, verbose);
 	else if ((t->file_type[0] == REGTYPE) || (t->file_type[0] == AREGTYPE))
-		recreate_file(t, i, option);
+		recreate_file(t, i, verbose);
 	//add handling of other file types: fifo, char, block, symlink
 	return ;
 }
@@ -245,7 +243,46 @@ int	are_next_two_blocks_empty(char *data, size_t i, size_t size)
 	return (0);
 }
 
-int	extract(char *file)
+void	set_modtime(char *filename, t_tar *t)
+{
+	struct timeval times[2];
+
+	times[0].tv_sec = strtoul(t->last_mod, NULL, 8);
+	times[0].tv_usec = 0;
+	times[1].tv_sec = strtoul(t->last_mod, NULL, 8);
+	times[1].tv_usec = 0;
+	utimes(filename, times);
+	return ;
+}
+
+void	restore_modtime(char *data, size_t size, int restore)
+{
+	size_t	i;
+	size_t	filesize;
+	size_t	pad;
+	char	*filename;
+	t_tar	*t;
+	
+	i = 0;
+	while ((restore == 1) && (i < size))
+	{
+		t = (t_tar *)&data[i];
+		if (are_next_two_blocks_empty(data, i, size) == 1)
+			break ;
+		filename = make_file_name(t);
+		filesize = strtol(t->file_size, NULL, 8);
+		set_modtime(filename, t);
+		free(filename);
+		i += 512;
+		pad = ((((filesize / 512) + 1 ) * 512) - filesize);
+		i += filesize;
+		if (pad != 512)
+			i += pad;
+	}
+	return ;
+}
+
+int	extract(char *file, int restore, int verbose)
 {
 	t_tar	*t;
 	size_t	i;
@@ -254,7 +291,7 @@ int	extract(char *file)
 
 	if ((data = getfilecontents(file, &size)) == NULL)
 	{
-		printf("error: could not read file\n");
+		printf("%s: error: could not read file\n", file);
 		return (0);
 	}
 	i = 0;
@@ -262,26 +299,206 @@ int	extract(char *file)
 	{
 		t = (t_tar *)&data[i];
 		if (is_valid_header(t))
-			extract_file(t, &i, 1);
+			extract_file(t, &i, verbose);
 		if (are_next_two_blocks_empty(data, i, size) == 1)
 			break ;
 	}
+	restore_modtime(data, size, restore);
 	free(data);
 	if (i != size)
 		return (0);
 	return (1);
 }
 
+//////////////////////////////////////////////////////
+
+void	print_entry_type(t_tar *t)
+{
+
+	if ((t->file_type[0] == REGTYPE) || (t->file_type[0] == AREGTYPE))
+		printf("-");
+	else if (t->file_type[0] == DIRTYPE)
+		printf("d");
+	else if (t->file_type[0] == LNKTYPE)
+		printf("l");
+	else if (t->file_type[0] == CHRTYPE)
+		printf("c");
+	else if (t->file_type[0] == BLKTYPE)
+		printf("b");
+	else if (t->file_type[0] == FIFOTYPE)
+		printf("p");
+	return ;
+}
+
+void	print_permissions(unsigned long st_mode)
+{
+	(st_mode & S_IRUSR) ? printf("r") : printf("-");
+	(st_mode & S_IWUSR) ? printf("w") : printf("-");
+	if (st_mode & S_ISUID)
+		(st_mode & S_IXUSR) ? printf("s") : printf("S");
+	else
+		(st_mode & S_IXUSR) ? printf("x") : printf("-");
+	(st_mode & S_IRGRP) ? printf("r") : printf("-");
+	(st_mode & S_IWGRP) ? printf("w") : printf("-");
+	if (st_mode & S_ISGID)
+		(st_mode & S_IXGRP) ? printf("s") : printf("S");
+	else
+		(st_mode & S_IXGRP) ? printf("x") : printf("-");
+	(st_mode & S_IROTH) ? printf("r") : printf("-");
+	(st_mode & S_IWOTH) ? printf("w") : printf("-");
+	if (st_mode & S_ISVTX)
+		(st_mode & S_IXOTH) ? printf("t") : printf("T");
+	else
+		(st_mode & S_IXOTH) ? printf("x") : printf("-");
+}
+
+void	print_file_mode(t_tar *t, unsigned long st_mode)
+{
+	(void)print_entry_type(t);
+	(void)print_permissions(st_mode);
+}
+
+int	count_digits(size_t n)
+{
+	int i;
+
+	if (n == 0)
+		return (1);
+	i = 0;
+	while (n)
+	{
+		n /= 10;
+		i++;
+	}
+	return (i);
+}
+
+void	print_details(char *filename, t_tar *t, size_t filesize)
+{
+	unsigned long	st_mode;
+	static int	owner_length;
+	static int	group_length;
+	static int	size_length;
+	char			*str_time;
+	time_t		filetime;
+
+	st_mode = strtol(t->file_mode, NULL, 8);
+	print_file_mode(t, st_mode);
+	printf("  0 "); //lame
+	if ((int)strlen(t->owner_name) > owner_length)
+		owner_length = strlen(t->owner_name);
+	if ((int)strlen(t->group_name) > group_length)
+		group_length = strlen(t->group_name);
+	printf("%-*s %-*s ", owner_length, t->owner_name, group_length, t->group_name);
+	if (count_digits(filesize) > size_length)
+		size_length = count_digits(filesize);
+	if (size_length < 5)
+		size_length = 5;
+	printf("%*zu ", size_length, filesize);
+	filetime = strtol(t->last_mod, NULL, 8);
+	str_time = ctime(&filetime);
+	printf("%.12s %s\n", &ctime(&filetime)[4], filename);
+}
+
+void	print_long(char *data, size_t size)
+{
+	size_t	i;
+	size_t	filesize;
+	size_t	pad;
+	char	*filename;
+	t_tar	*t;
+	
+	i = 0;
+	while (i < size)
+	{
+		t = (t_tar *)&data[i];
+		if (are_next_two_blocks_empty(data, i, size) == 1)
+			break ;
+		filename = make_file_name(t);
+		filesize = strtol(t->file_size, NULL, 8);
+		print_details(filename, t, filesize);
+		free(filename);
+		i += 512;
+		pad = ((((filesize / 512) + 1 ) * 512) - filesize);
+		i += filesize;
+		if (pad != 512)
+			i += pad;
+	}
+	return ;
+}
+
+
+void	print_short(char *data, size_t size)
+{
+	size_t	i;
+	size_t	filesize;
+	size_t	pad;
+	char	*filename;
+	t_tar	*t;
+	
+	i = 0;
+	while (i < size)
+	{
+		t = (t_tar *)&data[i];
+		if (are_next_two_blocks_empty(data, i, size) == 1)
+			break ;
+		filename = make_file_name(t);
+		printf("%s\n", filename);
+		free(filename);
+		i += 512;
+		filesize = strtol(t->file_size, NULL, 8);
+		pad = ((((filesize / 512) + 1 ) * 512) - filesize);
+		i += filesize;
+		if (pad != 512)
+			i += pad;
+	}
+	return ;
+}
+
+void	print(char *file, int verbose)
+{
+	size_t	size;
+	char	*data;
+	t_tar	*t;
+
+	if ((data = getfilecontents(file, &size)) == NULL)
+	{
+		printf("%s: error: could not read file\n", file);
+		return ;
+	}
+	t = (t_tar *)&data[0];
+	if (is_valid_header(t))
+	{
+		if (verbose)
+			print_long(data, size);
+		else
+			print_short(data, size);
+	}
+	else
+		printf("invalid tar archive\n");
+	free(data);
+	return ;
+}
+
+
+
+
 
 int	main(int ac, char **av)
 {
-//	printf("size of header is:  %lu\n", sizeof(t_tar));
-
 	if (ac == 2)
 	{
-		extract(av[1]);
+		extract(av[1], 1, 1);	//second parameter = restore access time yes/no tar -p
+								//third parameter, print file names to stdout tar -v
+	}
+	else if (ac == 3)
+	{
+		if ((av[1][0] == '-') && (av[1][1] == 't'))
+			print(av[2], 1);
 	}
 	else
+
+
 		printf("usage: ./untar <file>\n");
 
 /*
