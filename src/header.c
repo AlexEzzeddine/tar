@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:29:04 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 17:47:38 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 21:09:21 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,11 @@ int	check_magic(t_tar *t)
 {
 	if (strncmp(t->ustar, (const char *)TMAGIC, TMAGLEN) != 0)
 	{
-		printf("%s: ", t->file_name);
 		printf("error: bad tar file? ustar magic is incorrect\n");
 		return (0);
 	}
 	if (strncmp(t->ustar_ver, TVERSION, TVERSLEN) != 0)
 	{
-		printf("%s: ", t->file_name);
 		printf("error: bad tar file? ustar version does not match\n");
 		return (0);
 	}
@@ -47,7 +45,6 @@ int	is_valid_header(t_tar *t)
 	}
 	if (checksum != strtol(t->checksum, NULL, 8))
 	{
-		printf("%s: ", t->file_name);
 		printf("error: bad tar file? checksum does not match\n");
 		return (0);
 	}

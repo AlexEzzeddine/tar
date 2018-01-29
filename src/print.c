@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:25:32 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 17:44:58 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 21:10:46 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ void	print(char *file, int verbose)
 
 	if ((data = getfilecontents(file, &size)) == NULL)
 	{
-		printf("%s: error: could not read file\n", file);
+		printf("error: could not read file\n");
 		return ;
 	}
 	t = (t_tar *)&data[0];
@@ -132,7 +132,7 @@ void	print(char *file, int verbose)
 			print_short(data, size);
 	}
 	else
-		printf("%s: error: invalid tar archive\n", file);
+		printf("error: invalid tar archive\n");
 	free(data);
 	return ;
 }

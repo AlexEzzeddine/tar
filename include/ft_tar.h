@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:21:22 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 20:27:22 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 21:02:31 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,5 +121,7 @@ void			recreate_directory(t_tar *t, size_t *i, int verbose);
 void			recreate_file(t_tar *t, size_t *i, int verbose);
 void			restore_modtime(char *data, size_t size, int restore);
 void			set_modtime(char *filename, t_tar *t);
+void			stdin_quit(char *membuf);
+char			*stdin_read_eof(size_t *count);
 
 #endif

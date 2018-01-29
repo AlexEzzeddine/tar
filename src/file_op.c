@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:29:57 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 17:46:48 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 21:01:56 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ void	*getfilecontents(char *filename, size_t *size)
 	int				fd;
 	unsigned char	*mem;
 
+	if (filename == NULL)
+		return (stdin_read_eof(size));
 	if ((int)(*size = getfilesize(filename)) == -1)
 		quit(errno, NULL);
 	if ((mem = ft_memalloc(*size + 1)) == NULL)

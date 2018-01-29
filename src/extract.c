@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:31:12 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 17:46:13 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 21:29:07 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int		extract(char *file, int restore, int verbose)
 
 	if ((data = getfilecontents(file, &size)) == NULL)
 	{
-		printf("%s: error: could not read file\n", file);
+		printf("error: could not read file\n");
 		return (0);
 	}
 	i = 0;
@@ -74,12 +74,12 @@ int		extract(char *file, int restore, int verbose)
 		t = (t_tar *)&data[i];
 		if (is_valid_header(t))
 			extract_file(t, &i, verbose);
+		else
+			break ;
 		if (are_next_two_blocks_empty(data, i, size) == 1)
 			break ;
 	}
 	restore_modtime(data, size, restore);
 	free(data);
-	if (i != size)
-		return (0);
 	return (1);
 }

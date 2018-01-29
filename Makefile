@@ -19,8 +19,8 @@ SRC_FILES =	add.c \
 	path.c \
 	permissions.c \
 	print.c \
-	tar.c \
-	util.c
+	util.c \
+	stdin.c
 
 OBJ_FILES =			$(patsubst %.c,%.o,$(SRC_FILES))
 
