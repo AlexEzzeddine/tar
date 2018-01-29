@@ -138,13 +138,15 @@ int	is_valid_header(t_tar *t)
 
 char	*make_file_name(t_tar *t)
 {
-	size_t	length;
 	char	*data;
+	int		len;
 
-	length = strlen(t->file_prefix) + strlen(t->file_name) + 1;
-	data = ft_memalloc(length + 1);
-	data = strcat(data, t->file_prefix);
-	data = strcat(data, t->file_name);
+	data = ft_memalloc(260);
+	data = strncat(data, t->file_prefix, 155);
+	len = strlen(data);
+	if ((len != 0) && (data[len - 1] != '/'))
+		strcat(data, "/");
+	data = strncat(data, t->file_name, 100);
 	return (data);
 }
 
@@ -206,7 +208,7 @@ void	recreate_file(t_tar *t, size_t *i, int verbose)
 	pad = ((((fs / 512) + 1 ) * 512) - fs);
 	*i += fs;
 	if (pad != 512)
-		i += pad;
+		*i += pad;
 
 	return ;
 }
@@ -373,14 +375,35 @@ int	count_digits(size_t n)
 	return (i);
 }
 
+char	*time_string(t_tar *t)
+{
+	time_t	now;
+	char	*result;
+	int		i;
+	time_t	filetime;
+
+	filetime = strtol(t->last_mod, NULL, 8);
+	now = time(&now);
+	result = ctime(&filetime);
+	if ((filetime + ((365 / 2) * 86400) < now) ||
+			(now + ((365 / 2) * 86400) < filetime))
+	{
+		i = 0;
+		while (i < 5)
+		{
+			result[11 + i] = result[19 + i];
+			i++;
+		}
+	}
+	return (&result[4]);
+}
+
 void	print_details(char *filename, t_tar *t, size_t filesize)
 {
 	unsigned long	st_mode;
 	static int	owner_length;
 	static int	group_length;
 	static int	size_length;
-	char			*str_time;
-	time_t		filetime;
 
 	st_mode = strtol(t->file_mode, NULL, 8);
 	print_file_mode(t, st_mode);
@@ -395,9 +418,7 @@ void	print_details(char *filename, t_tar *t, size_t filesize)
 	if (size_length < 5)
 		size_length = 5;
 	printf("%*zu ", size_length, filesize);
-	filetime = strtol(t->last_mod, NULL, 8);
-	str_time = ctime(&filetime);
-	printf("%.12s %s\n", &ctime(&filetime)[4], filename);
+	printf("%.12s %s\n", time_string(t), filename);
 }
 
 void	print_long(char *data, size_t size)
