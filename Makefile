@@ -1,18 +1,29 @@
 NAME =				ft_tar
 
-SRC_FILES =			main.c
+SRC_FILES =	blocks.c \
+	extract.c \
+	file_op.c \
+	filename.c \
+	header.c \
+	main.c \
+	mem_op.c \
+	modtime.c \
+	permissions.c \
+	print.c \
+	util.c
+
 OBJ_FILES =			$(patsubst %.c,%.o,$(SRC_FILES))
 
 SRC_DIR =			src/
 OBJ_DIR =			obj/
-INCLUDE_DIRS =		include/ libft/includes
+INC_DIR =			include/
 
 SRC =				$(addprefix $(SRC_DIR), $(SRC_FILES))
 OBJ =				$(addprefix $(OBJ_DIR), $(OBJ_FILES))
 
 CC =				gcc
 C_FLAGS =			-Wall -Wextra -Werror -g
-INCLUDE_FLAGS =		$(addprefix -I , $(INCLUDE_DIRS))
+INC_FLAGS =			$(addprefix -I , $(INC_DIR))
 
 RED =				\033[31m
 GREEN =				\033[32m
@@ -39,7 +50,7 @@ $(NAME): $(OBJ)
 
 obj/%.o: src/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(C_FLAGS) $(INCLUDE_FLAGS) -c $< -o $@
+	$(CC) $(C_FLAGS) $(INC_FLAGS) -c $< -o $@
 
 clean:
 	@echo "$(YELLOW_LIGHT)$(NAME): $(YELLOW)Cleaning objects...$(END_COLOUR)"
