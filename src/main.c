@@ -6,16 +6,21 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/28 17:38:30 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 17:52:32 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/28 18:16:25 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_tar.h"
 
 /*
-** extract:
-** second parameter = restore access time yes/no tar -p
-** third parameter, print file names to stdout tar -v
+** extract (-x):
+** first parameter = file name of archive
+** second parameter = restore access time yes/no tar -p (always 1 ?)
+** third parameter, print file names to stdout tar (-xv)
+**
+** print (-t):
+** first parameter = file name of archive 
+** second parameter = verbose, 1 = long list print (-tv), 0 = short print
 */
 
 int	main(int ac, char **av)
