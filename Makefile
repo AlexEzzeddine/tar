@@ -1,15 +1,25 @@
 NAME =				ft_tar
 
-SRC_FILES =	blocks.c \
+SRC_FILES =	add.c \
+	blocks.c \
+	checksum.c \
+	create.c \
 	extract.c \
 	file_op.c \
 	filename.c \
+	fill1.c \
+	fill2.c \
 	header.c \
 	main.c \
+	main_extract.c \
 	mem_op.c \
+	modes.c \
 	modtime.c \
+	options.c \
+	path.c \
 	permissions.c \
 	print.c \
+	tar.c \
 	util.c
 
 OBJ_FILES =			$(patsubst %.c,%.o,$(SRC_FILES))

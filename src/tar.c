@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   util.c                                             :+:      :+:    :+:   */
+/*   tar.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/28 17:38:04 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 20:22:05 by asarandi         ###   ########.fr       */
+/*   Created: 2018/01/28 20:01:09 by asarandi          #+#    #+#             */
+/*   Updated: 2018/01/28 20:26:12 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,20 @@
 
 extern t_tar_options	g_tar_options;
 
-int		count_digits(size_t n)
+void			ft_tar(void)
 {
-	int i;
+	t_tar_mode mode;
 
-	if (n == 0)
-		return (1);
-	i = 0;
-	while (n)
+	mode = g_tar_options.mode;
+	if (mode == NONE)
 	{
-		n /= 10;
-		i++;
+		fprintf(stderr, "ft_tar: must specify one of -c, -x, -t\n");
+		exit(1);
 	}
-	return (i);
-}
-
-void	log_file(char *file)
-{
-	if (g_tar_options.verbose)
-		fprintf(stderr, "a %s\n", file);
+	else if (mode == CREATE)
+		tar_create();
+// else if (mode == EXTRACT)
+//  tar_extract();
+// else if (mode == LIST)
+//  tar_list();
 }

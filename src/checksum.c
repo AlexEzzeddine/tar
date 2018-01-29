@@ -1,36 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   util.c                                             :+:      :+:    :+:   */
+/*   checksum.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/28 17:38:04 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 20:22:05 by asarandi         ###   ########.fr       */
+/*   Created: 2018/01/28 19:59:29 by asarandi          #+#    #+#             */
+/*   Updated: 2018/01/28 19:59:41 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_tar.h"
 
-extern t_tar_options	g_tar_options;
-
-int		count_digits(size_t n)
+void			calculate_checksum(t_tar_header *header)
 {
-	int i;
+	unsigned int	sum;
+	size_t			i;
+	char			*ptr;
 
-	if (n == 0)
-		return (1);
+	sum = 0;
 	i = 0;
-	while (n)
-	{
-		n /= 10;
-		i++;
-	}
-	return (i);
-}
-
-void	log_file(char *file)
-{
-	if (g_tar_options.verbose)
-		fprintf(stderr, "a %s\n", file);
+	memset(header->checksum, ' ', 8);
+	ptr = (char *)header;
+	while (i < sizeof(t_tar_header))
+		sum += ptr[i++];
+	sprintf(header->checksum, "%06o", sum);
 }

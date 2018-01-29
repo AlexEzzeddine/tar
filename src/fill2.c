@@ -1,36 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   util.c                                             :+:      :+:    :+:   */
+/*   fill2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/28 17:38:04 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 20:22:05 by asarandi         ###   ########.fr       */
+/*   Created: 2018/01/28 20:00:22 by asarandi          #+#    #+#             */
+/*   Updated: 2018/01/28 20:00:37 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_tar.h"
 
-extern t_tar_options	g_tar_options;
-
-int		count_digits(size_t n)
+void			fill_header_file_size(t_tar_header *header, off_t st_size)
 {
-	int i;
-
-	if (n == 0)
-		return (1);
-	i = 0;
-	while (n)
-	{
-		n /= 10;
-		i++;
-	}
-	return (i);
+	if (*(header->file_type) == DIRTYPE)
+		st_size = 0;
+	sprintf(header->file_size, "%011o", (int)st_size);
+	header->file_size[11] = ' ';
 }
 
-void	log_file(char *file)
+void			fill_header_mod_time(t_tar_header *header, time_t mtime)
 {
-	if (g_tar_options.verbose)
-		fprintf(stderr, "a %s\n", file);
+	sprintf(header->last_mod, "%011o", (int)mtime);
+	header->last_mod[11] = ' ';
 }

@@ -1,36 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   util.c                                             :+:      :+:    :+:   */
+/*   path.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/28 17:38:04 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 20:22:05 by asarandi         ###   ########.fr       */
+/*   Created: 2018/01/28 19:59:47 by asarandi          #+#    #+#             */
+/*   Updated: 2018/01/28 20:00:07 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_tar.h"
 
-extern t_tar_options	g_tar_options;
-
-int		count_digits(size_t n)
+char			*join_path(char *s1, char *s2)
 {
-	int i;
+	int		len1;
+	char	*result;
+	int		slash;
 
-	if (n == 0)
-		return (1);
-	i = 0;
-	while (n)
+	slash = 1;
+	len1 = strlen(s1);
+	if (s1[len1 - 1] == '/')
+		slash = 0;
+	result = malloc(strlen(s1) + slash + strlen(s2) + 1);
+	if (result)
 	{
-		n /= 10;
-		i++;
+		strcpy(result, s1);
+		if (slash)
+			strcat(result, "/");
+		strcat(result, s2);
 	}
-	return (i);
-}
-
-void	log_file(char *file)
-{
-	if (g_tar_options.verbose)
-		fprintf(stderr, "a %s\n", file);
+	return (result);
 }

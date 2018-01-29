@@ -3,38 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: aezzeddi <aezzeddi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/28 17:38:30 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/28 18:16:25 by asarandi         ###   ########.fr       */
+/*   Created: 2018/01/28 18:40:35 by aezzeddi          #+#    #+#             */
+/*   Updated: 2018/01/28 20:02:08 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_tar.h"
 
-/*
-** extract (-x):
-** first parameter = file name of archive
-** second parameter = restore access time yes/no tar -p (always 1 ?)
-** third parameter, print file names to stdout tar (-xv)
-**
-** print (-t):
-** first parameter = file name of archive 
-** second parameter = verbose, 1 = long list print (-tv), 0 = short print
-*/
+t_tar_options g_tar_options = {.input_files_len = 0};
 
-int	main(int ac, char **av)
+int		main(int argc, char **argv)
 {
-	if (ac == 2)
-	{
-		extract(av[1], 1, 1);
-	}
-	else if (ac == 3)
-	{
-		if ((av[1][0] == '-') && (av[1][1] == 't'))
-			print(av[2], 1);
-	}
-	else
-		printf("usage: ./untar <file>\n");
+	parse_options(argc, argv);
+	ft_tar();
 	return (0);
 }
